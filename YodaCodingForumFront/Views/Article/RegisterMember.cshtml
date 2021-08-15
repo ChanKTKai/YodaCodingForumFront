@@ -1,0 +1,207 @@
+﻿
+
+@{
+    ViewData["Title"] = "註冊 - 優答Yoda Coding";
+    Layout = null;
+    var urlString = ViewBag.urlString;
+    Html.ValidationSummary(true);
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>註冊 - 優答 Yoda Coding</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/main.css">
+    <style>
+        .size {
+            font-size:13px;
+            text-align:center;
+            display:none;
+            margin-top:3px;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <!-- 背景顏色 -->
+        <div class="box">
+            <!-- 登入框 -->
+            <div class="register_container">
+                <div class="form">
+                    <h2>註冊 (*為必填欄位)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h2>
+                    <div class="mb-3">
+                        <label for="account" class="col-form-label">帳號 *</label>
+                        <input type="text" class="form-control" id="account" name="account" autocomplete="off" required>
+                        <div class="error text-danger size" id="accountTip">
+                            必填，請符合字數6-20間且只含英文及數字。
+                        </div>
+                        <div class="error text-danger size" id="accountRepeated">
+                            帳號已經有人使用。
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="col-form-label">密碼 *</label>
+                        <input type="password" class="form-control" id="password" name="password" required />
+                        <div class="error text-danger size" id="passwordTip">
+                            必填，請符合字數6-20間，<br />
+                            並至少一個數字，一個小寫或大寫英文字母。
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="col-form-label">姓名 *</label>
+                        <input type="text" class="form-control" id="username" name="username" autocomplete="off" required />
+                        <div class="error text-danger size" id="usernameTip">
+                            必填，請填寫您的大名。
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nickname" class="col-form-label">暱稱</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname" autocomplete="off" />
+                        <div class="size" id="nicknameTip">
+                            這是您在 Forum 對其他使用者顯示的名稱，<br />
+                            之後可以隨時變更。
+                        </div>
+                        <div class="error text-danger size" id="nicknameRepeated">
+                            暱稱已經有人使用。
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div>性別</div>
+                        <input type="radio" class="genderClass" id="male" name="gender" value="M">
+                        <label for="male">男性</label>
+                        <input type="radio" class="genderClass" id="female" name="gender" value="F">
+                        <label for="female">女性</label>
+                        <input type="radio" checked="checked" class="genderClass" id="noProvide" name="gender" value="N">
+                        <label for="noProvide">不提供</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="col-form-label">電子郵件 *</label>
+                        <input type="email" class="form-control" id="email" name="email" autocomplete="off" placeholder="example@simple.com" required />
+                        <div class="error text-danger size" id="emailTip">
+                            必填，請填寫正確E-mail格式。
+                        </div>
+                        <div class="error text-danger size" id="emailRepeated">
+                            此E-mail已經註冊過。
+                        </div>
+                        <p id="demo"></p>
+                    </div>
+                    <div><button id="autofill">填入資料</button></div>
+                    <div class="inputBox">
+                        <button id="goRegister" class="btn btn-success">註冊</button>
+                        <a href="javascript:history.go(-1)"><button class="btn btn-secondary">取消</button></a>
+                    </div>
+                </div>
+            </div>
+            <button id="throughtBtn" style="display:none" data-bs-toggle="modal" data-bs-target="#confirmEmailBox"></button>
+            <div class="modal fade" id="confirmEmailBox" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">註冊成功</h5>
+                        </div>
+                        <div class="modal-body">
+                            只剩最後一步了，請至信箱驗證帳戶。
+                        </div>
+                        <div class="modal-footer">
+                            <a href="/article/articleWall"><button class="btn btn-success">確定</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="~/js/jquery/jquery-3.6.0.min.js"></script>
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#goRegister").on("click", function () {
+                $.post('/Article/Register',
+                    {
+                        account: $('#account').val(),
+                        password: $('#password').val(),
+                        username: $('#username').val(),
+                        nickname: $('#nickname').val(),
+                        gender: $("[name='gender']:checked").val(),
+                        email: $('#email').val()
+                    },
+                    function (response) {
+                        switch (response) {
+                            case "Success":
+                                $("#account").removeClass("is-invalid").addClass("is-valid");
+                                $("#password").removeClass("is-invalid").addClass("is-valid");
+                                $("#username").removeClass("is-invalid").addClass("is-valid");
+                                $("#email").removeClass("is-invalid").addClass("is-valid");
+                                document.getElementById("throughtBtn").click();
+                                break;
+                            case "AccountError":
+                                $("#account").addClass("is-invalid")
+                                $("#account").focus();
+                                $("#accountTip").show("slow")
+                                break;
+                            case "PasswordError":
+                                $("#password").addClass("is-invalid")
+                                $("#password").focus();
+                                $("#passwordTip").show("slow")
+                                break;
+                            case "UsernameError":
+                                $("#username").addClass("is-invalid")
+                                $("#username").focus();
+                                $("#usernameTip").show("slow")
+                                break; 
+                            case "EmailError":
+                                $("#email").addClass("is-invalid")
+                                $("#email").focus();
+                                $("#emailTip").show("slow")
+                                break;
+                            case "AccountRepeated":
+                                $("#account").addClass("is-invalid")
+                                $("#account").focus();
+                                $("#accountRepeated").show("slow")
+                                break;
+                            case "NicknameRepeated":
+                                $("#nickname").addClass("is-invalid")
+                                $("#nickname").focus();
+                                $("#nicknameRepeated").show("slow")
+                                break;
+                            case "EmailRepeated":
+                                $("#email").addClass("is-invalid")
+                                $("#email").focus();
+                                $("#emailRepeated").show("slow")
+                                break;
+                            default:
+                                alert("錯誤。")
+                                history.go(-1);
+                                break;
+                        }
+                    });
+            });
+            $("#account").focus(function () { });
+            $("#account").focusout(function () { $("#accountTip").hide("slow");});
+            $("#password").focus(function () {  });
+            $("#password").focusout(function () { $("#passwordTip").hide("slow");});
+            $("#username").focus(function () {  });
+            $("#username").focusout(function () { $("#usernameTip").hide("slow");});
+            $("#nickname").focus(function () { $("#nicknameTip").show("slow") });
+            $("#nickname").focusout(function () { $("#nicknameTip").hide("slow")});
+            $("#email").focus(function () { });
+            $("#email").focusout(function () { $("#emailTip").hide("slow"); });
+
+
+            $("#autofill").on("click", function () {
+                $("#account").val("yoda");
+                $("#password").val("yoda123456");
+                $("#username").val("yoda");
+                $("#nickname").val("yoda");
+                $("#email").val("yodacodingservice@gmail.com");
+            });
+        });
+
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1246 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+@model YodaCodingForumFront.Controllers.ArticleController.articleDetail
+
+@{
+    ViewData["Title"] = "【問答】 " + @Model.ArticleTitle + " - 優答Yoda Coding";
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+    string userName = hca.HttpContext.Session.GetString("userName") ?? "Guest";
+    var relatedArticleList = ViewBag.relatedArticleList;
+    var hotagList = ViewBag.hotagList;
+    var userImage = ViewBag.userImage;
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Editor.md examples</title>
+    <link rel="stylesheet" href="~/css/editormd.preview.css" />
+    <link rel="stylesheet" href="~/css/editormd.css" />
+    <link rel="stylesheet" href="~/css/main.css" />
+    <style>
+        .relatedArticle {
+            /*display: inline-block;
+            vertical-align: middle;
+            width: 120px;*/
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+
+<body>
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/lib/marked.min.js"></script>
+    <script src="~/editormd.js"></script>
+    <script type="text/javascript">
+
+        $(function () {
+            var showArticle, testEditormd;
+            showArticle = editormd.markdownToHTML("showArticleBox", {
+                htmlDecode: "style,script,iframe",
+                emoji: true,
+                taskList: true,
+                tex: true,
+                flowChart: true,
+                sequenceDiagram: true,
+            });
+
+
+            testEditormd = editormd("test-editormd", {
+                width: "100%",
+                height: 480,
+                path: '../lib/',
+                placeholder: "留言…",
+                imageUpload: true,
+                watch: false,
+                autoFocus: false
+            });
+            $("#getCommentMD").on("click", function () {
+                $("#commentMD").val(testEditormd.getMarkdown());
+                console.log($("#commentMD").val());
+                //alert(testEditor.getMarkdown());
+            });
+        });
+    </script>
+    @foreach (var Comment in Model.ArticleCommentList)
+    {
+        <script type="text/javascript">
+            $(function () {
+                var articleComment;
+                articleComment = editormd.markdownToHTML("-@Comment.CommentId-showComment", {
+                    htmlDecode: "style,script,iframe",
+                    emoji: true,
+                    taskList: true,
+                    tex: true,
+                    flowChart: true,
+                    sequenceDiagram: true
+                });
+            });
+        </script>
+    }
+
+    <div class="banner">
+        <div class="container ">
+            <div class="ms-5">
+                <h3>YODA Coding</h3>
+                <div>優答大師技術分享論壇</div>
+                <div>
+                    <button type="button" class="btn btn-success mt-3" id="goarticle"> 我要發問</button>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+
+    <div class="container">
+        @if (Model.ArticleStatus == "F" || Model.ArticleStatus == "A")
+        {
+            <div class="row justify-content-center ">
+                <div class="col-9">
+                    <div class="mt-4 col-12">
+                        <div>
+                            <div class="article_container position-relative">
+                                @if (userName == "Guest")
+                                {
+                                    <div class="position-absolute top-10 end-100 article_like" onclick="noLogin()">
+                                        <div style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                            <i class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="likeborder">@Model.ArticleLike</div>
+                                        <div class="i_cursor" style="margin-top:10px">
+                                            <i class="fa fa-star-o collectIconHover fa-lg" aria-hidden="true"></i> 收藏
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="position-absolute top-10 end-100 article_like">
+                                        <div style="display:none">@Model.ArticleId</div>
+                                        <div id="articlelikediv" style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                            @if (Model.ArticleCollections[0] > 0)
+                                            {
+                                                <i id="articlelikeicon" class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
+                                            }
+                                            else
+                                            {
+                                                <i id="articlelikeicon" class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                            }
+                                        </div>
+                                        <div id="articlelike" class="likeborder">@Model.ArticleLike</div>
+                                        <div style="display:none">@Model.ArticleId</div>
+                                        @if (Model.ArticleCollections[1] > 0)
+                                        {
+                                            <div id="articlecollectdiv" class="i_cursor" style="margin-top:10px">
+                                                <i class="fa fa-star collectIconHover fa-lg starLight" aria-hidden="true"></i>收藏
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div id="articlecollectdiv" class="i_cursor" style="margin-top:10px">
+                                                <i class="fa fa-star-o collectIconHover fa-lg" aria-hidden="true"></i>收藏
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                <div class="article_header">
+                                    <div class="d-flex justify-content-between">
+                                        <h3 class="">@Model.ArticleTitle</h3>
+                                        @if (userName != "Guest")
+                                        {
+                                            <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                <span tabindex="0"><i class="fa fa-ellipsis-v i_color" aria-hidden="true"></i></span>
+                                                <ul>
+                                                    @if (userName == Model.CreateUser)
+                                                    {
+
+                                                        <li><a href="/question/questionEdit?q=@Model.ArticleId">編輯文章</a></li>
+                                                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal5">刪除文章</a></li>
+                                                    }
+                                                    @if (userName != Model.CreateUser)
+                                                    {
+
+                                                        <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                            <div style="display:none;">@Model.ArticleId</div>
+                                            <div style="display:none;">@Model.ArticleId</div>
+                                        }
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="">
+                                            @foreach (var tag in Model.ArticleTagList)
+                                            {
+                                                <a href="/Tag/Tagsearch?tagid=@tag.TagId">
+                                                    <span class="badge bg-success">@tag.TagName</span>
+                                                </a>
+                                            }
+                                        </div>
+
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="mt-3 d-flex flex-row">
+                                            <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Model.ArticleImage))" alt="" class=" img-fluid article_img">
+                                            @if (Model.Nickname == null)
+                                            {
+                                                <a href="/User/User?account=@Model.CreateUser" target="_blank">
+                                                    <div class="article_author align-self-center index_title">@Model.CreateUser</div>
+                                                </a>
+                                            }
+                                            else
+                                            {<a href="/User/User?account=@Model.CreateUser" target="_blank">
+                                                    <div class="article_author align-self-center index_title">
+                                                        @Model.Nickname（@Model.CreateUser）
+                                                    </div>
+                                                </a>
+                                            }
+                                        </div>
+                                        <div class="align-self-start">
+                                            <div class="view_watch article_time position-relative">
+                                                <div>
+                                                    @if (Model.ArticleVersion > 1)
+                                                    {
+                                                        <div class="post_time">
+                                                            最後編輯時間 : @Model.LastupdateDate
+                                                        </div>
+                                                        <div style="width:93%;" class="article_time_hover position-absolute bottom-100 start-0">
+                                                            發文時間 : @Model.CreateDate
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div>
+                                                            發文時間 : @Model.CreateDate
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="view_watch float-end">@Model.ArticleViews 瀏覽</div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                </div>
+
+                                <div class="">
+                                    <div class="card-body">
+                                        <div id="showArticleBox">
+                                            <textarea>@Model.ArticleContent</textarea>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="d-flex justify-content-start article_reply">
+                                        <div style="margin-right:10px">
+                                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> 回覆 <span>@Model.ArticleResponseCount</span>
+                                        </div>
+                                        <div style="display:none">@Model.ArticleId</div>
+                                        @if (userName == "Guest")
+                                        {
+                                            <div class="i_cursor followIconHover" onclick="noLogin();">
+                                                <i class="fa fa-heart-o" aria-hidden="true"></i> 追蹤
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            if (Model.ArticleCollections[2] > 0)
+                                            {
+                                                <div id="articleFollowdiv" class="i_cursor followIconHover">
+                                                    <i class="fa fa-heart heartLight" aria-hidden="true"></i> 追蹤
+                                                </div>
+                                            }
+                                            else
+                                            {
+
+                                                <div id="articleFollowdiv" class="i_cursor followIconHover">
+                                                    <i class="fa fa-heart-o" aria-hidden="true"></i> 追蹤
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                    <br>
+                                    <div>
+                                        @foreach (var Response in Model.ArticleResponseList)
+                                        {
+                                            if (Response.ResponseStatus == "N")
+                                            {
+                                                <div class="article_textarea">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div class=" d-flex flex-row">
+                                                            <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Response.ResponseImage))" alt="" class=" img-fluid article_img">
+                                                            <div>
+                                                                <div class="article_author align-self-center index_title">
+                                                                    @if (Response.ResponseNickname == null)
+                                                                    {
+                                                                        <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                            @Response.ResponseAccount
+                                                                        </a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                            @Response.ResponseNickname（@Response.ResponseAccount）
+                                                                        </a>
+                                                                    }
+                                                                </div>
+                                                                <div class="article_message">@Response.ResponseContent</div>
+                                                                <div class="view_watch align-self-center ms-2">@Response.CreateDate </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="align-self-start">
+                                                            @if (userName != "Guest")
+                                                            {
+
+                                                                <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                                    <span tabindex="0"><i class="fa fa-ellipsis-v  i_color" aria-hidden="true"></i></span>
+                                                                    <ul>
+                                                                        @if (userName == Response.ResponseAccount)
+                                                                        {
+                                                                            <li data-bs-toggle="modal" data-bs-target="#delete_@Response.ResponseID" style="cursor: pointer;">刪除回覆</li>
+                                                                        }
+                                                                        @if (userName != Response.ResponseAccount)
+                                                                        {
+
+                                                                            <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                                        }
+                                                                    </ul>
+                                                                </div>
+                                                                <div style="display:none;">@Response.ResponseID</div>
+                                                                <div style="display:none;">@Model.ArticleId</div>
+                                                            }
+                                                        </div>
+                                                        <div class="modal fade" id="delete_@Response.ResponseID" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="exampleModalLabel">確定刪除回覆？</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        如刪除後需復原請私訊管理員處理。
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <a href="/question/a_responseDelete/@Response.ResponseID/@Model.ArticleId"><button class="btn btn-success">確定</button></a>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                        }
+                                        <div class="article_textarea">
+                                            <div class=" d-flex justify-content-between ">
+                                                @if (userName == "Guest")
+                                                {
+                                                    <div class="col-10">
+                                                        <textarea style="text-align:center;" class="col-12" placeholder="想回覆嗎？請先登入。" disabled></textarea>
+                                                    </div>
+                                                    <div class="col ms-2">
+                                                        <input type="button" onclick="noLogin()" class="btn btn-success " value="登入" />
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="d-flex flex-row me-2">
+                                                        <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(userImage))" alt="" class=" img-fluid article_img">
+                                                    </div>
+
+                                                    <div class="col-10">
+                                                        <textarea name="articleResponse" id="articleResponse" class="col-12" placeholder="回覆…"></textarea>
+                                                    </div>
+                                                    <div class="col ms-2">
+                                                        <input type="button" id="articleResponseBtn" class="btn btn-success " value="送出" />
+                                                    </div>
+                                                }
+
+                                            </div>
+                                            <div class="mb-3" style="text-align: center;display:none;" id="noArticleResponse">
+                                                <span class="error text-danger">請輸入內容再送出回覆。</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <hr>
+                            <br>
+                            @foreach (var Comment in Model.ArticleCommentList)
+                            {
+                                if (Comment.CommentStatus == "N" && Comment.CommentAnswer == "Y")
+                                {
+                                    <div>
+                                        <div class="article_container position-relative">
+                                            @if (userName == "Guest")
+                                            {
+                                                <div class="position-absolute top-10 end-100 article_like" onclick="noLogin()">
+                                                    <div style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                                        <i class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                                    </div>
+                                                    <div class="likeborder">@Comment.CommentLike</div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="position-absolute top-10 end-100 article_like">
+                                                    <div style="display:none">@Comment.CommentId</div>
+                                                    <div id="like_@Comment.CommentId" style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                                        @if (Comment.CommentCollections > 0)
+                                                        {
+                                                            <i class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                                        }
+                                                    </div>
+                                                    <div class="likeborder">@Comment.CommentLike</div>
+                                                </div>
+                                            }
+                                            <p class="answer_p"><i class="fa fa-star" aria-hidden="true"></i> 最佳回答</p>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="mt-3 d-flex flex-row">
+                                                    <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Comment.CommentImage))" alt="" class=" img-fluid article_img">
+                                                    <div class="article_author align-self-center index_title">
+                                                        @if (Comment.CommentNickname == null)
+                                                        {
+                                                            <a href="/User/User?account=@Comment.CommentAccount" target="_blank">
+                                                                @Comment.CommentAccount
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="/User/User?account=@Comment.CommentAccount" target="_blank">
+                                                                @Comment.CommentNickname（@Comment.CommentAccount）
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                    @if (Comment.CommentVersion > 1)
+                                                    {
+                                                        <div class="view_watch align-self-center ms-2">
+
+                                                            <div class="view_watch article_time position-relative">
+                                                                <div>
+                                                                    <div class="post_time">最後編輯時間 : @Comment.CreateDate</div>
+                                                                    <div style="width:93%;" class="article_time_hover position-absolute bottom-100 start-0">發文時間 : @Model.CreateDate</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="view_watch align-self-center ms-2">@Comment.CreateDate</div>
+                                                    }
+                                                </div>
+
+                                                <div class="align-self-start">
+                                                    @if (userName != "Guest")
+                                                    {
+
+                                                        <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                            <span tabindex="0"><i class="fa fa-ellipsis-v i_color" aria-hidden="true"></i></span>
+                                                            <ul>
+                                                                @if (Comment.CommentAccount == userName)
+                                                                {
+                                                                    <li><a href="/question/commentEdit?c=@Comment.CommentId">編輯留言</a></li>
+                                                                    <li data-bs-toggle="modal" data-bs-target="#delete_@Comment.CommentId">刪除留言</li>
+                                                                }
+                                                                @if (Comment.CommentAccount != userName)
+                                                                {
+
+                                                                    <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                                }
+                                                            </ul>
+                                                        </div>
+                                                        <div style="display:none;">@Comment.CommentId</div>
+                                                        <div style="display:none;">@Model.ArticleId</div>
+                                                    }
+                                                    <div class="modal fade" id="delete_@Comment.CommentId" tabindex="-1" aria-labelledby="exampleModalLabel"
+                                                         aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">確定刪除回答？</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    如刪除後需復原請私訊管理員處理。
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <a href="/question/commentDelete/@Comment.CommentId/@Model.ArticleId">
+                                                                        <button class="btn btn-success">
+                                                                            確定
+                                                                        </button>
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <div id="-@Comment.CommentId-showComment">
+                                                <textarea>@Comment.CommentContent</textarea>
+                                            </div>
+                                            <br>
+                                            <div class="d-flex justify-content-between article_reply">
+                                                <div>
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                    <span>回覆</span>
+                                                    <span>@Comment.CommentResponseCount</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                @foreach (var Response in Comment.CommentResponseList)
+                                                {
+                                                    if (Response.ResponseStatus == "N")
+                                                    {
+                                                        <div class="article_textarea">
+                                                            <div class="d-flex justify-content-between">
+                                                                <div class=" d-flex flex-row">
+                                                                    <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Response.ResponseImage))" alt="" class=" img-fluid article_img">
+                                                                    <div>
+                                                                        <div class="article_author align-self-center index_title">
+                                                                            @if (Response.ResponseNickname == null)
+                                                                            {
+                                                                                <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                                    @Response.ResponseAccount
+                                                                                </a>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                                    @Response.ResponseNickname（@Response.ResponseAccount）
+                                                                                </a>
+                                                                            }
+                                                                        </div>
+                                                                        <div class="article_message">@Response.ResponseContent</div>
+                                                                        <div class="view_watch align-self-center ms-2">@Response.CreateDate </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="align-self-start">
+                                                                    @if (userName != "Guest")
+                                                                    {
+
+                                                                        <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                                            <span tabindex="0"><i class="fa fa-ellipsis-v  i_color" aria-hidden="true"></i></span>
+                                                                            <ul>
+                                                                                @if (userName == Response.ResponseAccount)
+                                                                                {
+                                                                                    <li data-bs-toggle="modal" data-bs-target="#delete_@Response.ResponseID" style="cursor: pointer;"></li>
+                                                                                }
+                                                                                @if (userName != Response.ResponseAccount)
+                                                                                {
+
+                                                                                    <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                                                }
+                                                                            </ul>
+                                                                        </div>
+                                                                        <div style="display:none;">@Response.ResponseID</div>
+                                                                        <div style="display:none;">@Model.ArticleId</div>
+                                                                    }
+                                                                </div>
+                                                                <div class="modal fade" id="delete_@Response.ResponseID" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                                    <div class="modal-dialog">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title" id="exampleModalLabel">確定刪除回覆？</h5>
+                                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                如刪除後需復原請私訊管理員處理。
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <a href="/question/c_responseDelete/@Response.ResponseID/@Model.ArticleId"><button class="btn btn-success">確定</button></a>
+                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                <div class="article_textarea">
+                                                    <div class=" d-flex justify-content-between ">
+                                                        @if (userName == "Guest")
+                                                        {
+                                                            <div class="col-10">
+                                                                <textarea style="text-align:center;" class="col-12" placeholder="想回覆嗎？請先登入。" disabled></textarea>
+                                                            </div>
+                                                            <div class="col ms-2">
+                                                                <input type="button" onclick="noLogin()" class="btn btn-success " value="登入" />
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+
+                                                            <div class="d-flex flex-row me-2">
+                                                                <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(userImage))" alt="" class=" img-fluid article_img">
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <textarea name="" id="-@Comment.CommentId-textarea" class="col-12"
+                                                                          placeholder="回覆…"></textarea>
+                                                                <input type="text" value="@Comment.CommentId" style="display:none;" />
+                                                            </div>
+                                                            <div class="col ms-2">
+                                                                <button type="button" id="-@Comment.CommentId-submit"
+                                                                        class="btn btn-success ">
+                                                                    送出
+                                                                </button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="mb-3" style="text-align: center;display:none;" id="-@Comment.CommentId-emptyError">
+                                                        <span class="error text-danger">無內容，請輸入內容再發表。</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <hr />
+                                    <br />
+                                }
+                            }
+
+                            @foreach (var Comment in Model.ArticleCommentList)
+                            {
+                                if (Comment.CommentStatus == "N" && Comment.CommentAnswer != "Y")
+                                {
+                                    <div>
+                                        <div class="article_container position-relative">
+                                            @if (userName == "Guest")
+                                            {
+                                                <div class="position-absolute top-10 end-100 article_like" onclick="noLogin()">
+                                                    <div style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                                        <i class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                                    </div>
+                                                    <div class="likeborder">@Comment.CommentLike</div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="position-absolute top-10 end-100 article_like">
+                                                    <div style="display:none">@Comment.CommentId</div>
+                                                    <div id="like_@Comment.CommentId" style="margin-bottom:3px" class="i_cursor  likeIconHover">
+                                                        @if (Comment.CommentCollections > 0)
+                                                        {
+                                                            <i class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-thumbs-o-up fa-lg" aria-hidden="true"></i>
+                                                        }
+                                                    </div>
+                                                    <div class="likeborder">@Comment.CommentLike</div>
+                                                </div>
+                                            }
+                                            <div class="d-flex justify-content-between">
+                                                <div class="mt-3 d-flex flex-row">
+                                                    <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Comment.CommentImage))" alt="" class=" img-fluid article_img">
+                                                    <div class="article_author align-self-center index_title">
+                                                        @if (Comment.CommentNickname == null)
+                                                        {
+                                                            <a href="/User/User?account=@Comment.CommentAccount" target="_blank">
+                                                                @Comment.CommentAccount
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="/User/User?account=@Comment.CommentAccount" target="_blank">
+                                                                @Comment.CommentNickname（@Comment.CommentAccount）
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                    @if (Comment.CommentVersion > 1)
+                                                    {
+                                                        <div class="view_watch align-self-center ms-2">
+
+                                                            <div class="view_watch article_time position-relative">
+                                                                <div>
+                                                                    <div class="post_time">最後編輯時間 : @Comment.CreateDate</div>
+                                                                    <div style="width:93%;" class="article_time_hover position-absolute bottom-100 start-0">發文時間 : @Model.CreateDate</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="view_watch align-self-center ms-2">@Comment.CreateDate</div>
+                                                    }
+                                                </div>
+                                                <div class="align-self-start">
+                                                    @if (userName != "Guest")
+                                                    {
+
+                                                        <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                            <span tabindex="0"><i class="fa fa-ellipsis-v i_color" aria-hidden="true"></i></span>
+                                                            <ul>
+                                                                @if (Comment.CommentAccount == userName)
+                                                                {
+                                                                    <li><a href="/question/commentEdit?c=@Comment.CommentId">編輯留言</a></li>
+                                                                    <li data-bs-toggle="modal" data-bs-target="#delete_@Comment.CommentId">刪除留言</li>
+                                                                }
+                                                                @if (Model.CreateUser == userName)
+                                                                {
+                                                                    <li><div data-bs-toggle="modal" data-bs-target="#bestAnswer_@Comment.CommentId" style="cursor: pointer;">設為最佳回答</div></li>
+                                                                }
+                                                                @if (Comment.CommentAccount != userName)
+                                                                {
+
+                                                                    <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                                }
+
+                                                            </ul>
+                                                        </div>
+                                                        <div style="display:none;">@Comment.CommentId</div>
+                                                        <div style="display:none;">@Model.ArticleId</div>
+                                                    }
+                                                    @*刪除*@
+                                                    <div class="modal fade" id="delete_@Comment.CommentId" tabindex="-1" aria-labelledby="exampleModalLabel"
+                                                         aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">確定刪除回答？</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    如刪除後需復原請私訊管理員處理。
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <a href="/question/commentDelete/@Comment.CommentId/@Model.ArticleId">
+                                                                        <button class="btn btn-success">
+                                                                            確定
+                                                                        </button>
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @*設為最佳回答*@
+                                                    <div class="modal fade" id="bestAnswer_@Comment.CommentId" tabindex="-1" aria-labelledby="exampleModalLabel"
+                                                         aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">確定要設為最佳回答嗎？</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                            aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    最佳回答將會顯示在回答第一個。
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <a href="/question/bestAnswer/@Comment.CommentId/@Model.ArticleId">
+                                                                        <button class="btn btn-success">
+                                                                            確定
+                                                                        </button>
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <div id="-@Comment.CommentId-showComment">
+                                                <textarea>@Comment.CommentContent</textarea>
+                                            </div>
+                                            <br>
+                                            <div class="d-flex justify-content-between article_reply">
+                                                <div>
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                    <span>回覆</span>
+                                                    <span>@Comment.CommentResponseCount</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                @foreach (var Response in Comment.CommentResponseList)
+                                                {
+                                                    if (Response.ResponseStatus == "N")
+                                                    {
+                                                        <div class="article_textarea">
+                                                            <div class="d-flex justify-content-between">
+                                                                <div class=" d-flex flex-row">
+                                                                    <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(Response.ResponseImage))" alt="" class=" img-fluid article_img">
+                                                                    <div>
+                                                                        <div class="article_author align-self-center index_title">
+                                                                            @if (Response.ResponseNickname == null)
+                                                                            {
+                                                                                <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                                    @Response.ResponseAccount
+                                                                                </a>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <a href="/User/User?account=@Response.ResponseAccount" target="_blank">
+                                                                                    @Response.ResponseNickname（@Response.ResponseAccount）
+                                                                                </a>
+                                                                            }
+                                                                        </div>
+                                                                        <div class="article_message">@Response.ResponseContent</div>
+                                                                        <div class="view_watch align-self-center ms-2">@Response.CreateDate </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="align-self-start">
+                                                                    @if (userName != "Guest")
+                                                                    {
+
+                                                                        <div class="sample-menu-style1 dropdown-menu1 preReport">
+                                                                            <span tabindex="0"><i class="fa fa-ellipsis-v  i_color" aria-hidden="true"></i></span>
+                                                                            <ul>
+                                                                                @if (userName == Response.ResponseAccount)
+                                                                                {
+                                                                                    <li data-bs-toggle="modal" data-bs-target="#delete_@Response.ResponseID" style="cursor: pointer;">刪除回覆</li>
+                                                                                }
+                                                                                @if (userName != Response.ResponseAccount)
+                                                                                {
+
+                                                                                    <li><div data-bs-toggle="modal" data-bs-target="#ReportModal" style="cursor: pointer;">檢舉</div></li>
+                                                                                }
+                                                                            </ul>
+                                                                        </div>
+                                                                        <div style="display:none;">@Response.ResponseID</div>
+                                                                        <div style="display:none;">@Model.ArticleId</div>
+                                                                    }
+                                                                </div>
+                                                                <div class="modal fade" id="delete_@Response.ResponseID" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                                    <div class="modal-dialog">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title" id="exampleModalLabel">確定刪除回覆？</h5>
+                                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                如刪除後需復原請私訊管理員處理。
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <a href="/question/c_responseDelete/@Response.ResponseID/@Model.ArticleId"><button class="btn btn-success">確定</button></a>
+                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                <div class="article_textarea">
+                                                    <div class=" d-flex justify-content-between ">
+                                                        @if (userName == "Guest")
+                                                        {
+                                                            <div class="col-10">
+                                                                <textarea style="text-align:center;" class="col-12" placeholder="想回覆嗎？請先登入。" disabled></textarea>
+                                                            </div>
+                                                            <div class="col ms-2">
+                                                                <input type="button" onclick="noLogin()" class="btn btn-success " value="登入" />
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="d-flex flex-row me-2">
+                                                                <img src="@String.Format("data:image/png;base64,{0}",Convert.ToBase64String(userImage))" alt="" class=" img-fluid article_img">
+                                                            </div>
+                                                            <div class="col-10">
+                                                                <textarea name="" id="-@Comment.CommentId-textarea" class="col-12"
+                                                                          placeholder="回覆…"></textarea>
+                                                                <input type="text" value="@Comment.CommentId" style="display:none;" />
+                                                            </div>
+                                                            <div class="col ms-2">
+                                                                <button type="button" id="-@Comment.CommentId-submit"
+                                                                        class="btn btn-success ">
+                                                                    送出
+                                                                </button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="mb-3" style="text-align: center;display:none;" id="-@Comment.CommentId-emptyError">
+                                                        <span class="error text-danger">無內容，請輸入內容再發表。</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                }
+                            }
+                            <br>
+                            <hr>
+                            <div class="article_container">
+
+                                @if (userName == "Guest")
+                                {
+                                    <p class="answer_p" style="text-align:center;">想要回答嗎？請先登入。</p>
+                                    <div class="d-flex justify-content-center">
+                                        <button type="button" id="getCommentMD" class="btn btn-success mt-3 col-2" data-bs-toggle="modal" data-bs-target="#exampleModal">登入</button>
+                                    </div>
+
+                                }
+                                else
+                                {
+                                    <p class="answer_p">回答</p>
+
+                                    <div class="article_want_answer">
+                                        <div id="test-editormd"></div>
+                                    </div>
+                                    <textarea id="commentMD" name="commentMD" style="display:none;"></textarea>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" id="getCommentMD" class="btn btn-success mt-3 col-2" data-bs-toggle="modal" data-bs-target="#exampleModal6">確定</button>
+                                    </div>
+                                }
+                            </div>
+                            <br />
+                            @if (relatedArticleList == null)
+                            {
+
+                            }
+                            else
+                            {
+
+                                <div class=" article_container">
+                                    <p class="answer_p">相關問題</p>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <ul>
+                                                @foreach (var article in relatedArticleList)
+                                                {
+                                                    if (article.ArticleId != @Model.ArticleId)
+                                                    {
+                                                        <li class="index_title">
+                                                            <a href="/question/question?q=@article.ArticleId">
+                                                                @article.TagName
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="exampleModal6" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">確定發表回答？</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                請確認留言內容符合規範範圍。
+                            </div>
+                            <div class="mb-3" style="text-align: center;display:none;" id="noArticleComment">
+                                <span class="error text-danger">無內容，請輸入內容。</span>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="sureCommentMD" class="btn btn-success">確定</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">確定刪除問題？</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                如刪除後需復原請私訊管理員處理。
+                            </div>
+                            <div class="modal-footer">
+                                <a href="/question/questiondelete/@Model.ArticleId"><button class="btn btn-success">確定</button></a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門問答
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var hotQuestion in Model.hotQuestionList)
+                            {
+                                <li class="list-group-item index_title relatedArticle">
+                                    <a href="/question/question?q=@hotQuestion.itemID">@hotQuestion.itemTitle</a>
+                                </li>
+
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門文章
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var hotArticle in Model.hotArticleList)
+                            {
+                                <li class="list-group-item index_title relatedArticle">
+                                    <a href="/article/article?a=@hotArticle.itemID">@hotArticle.itemTitle</a>
+                                </li>
+
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門Tag
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                @foreach (var tag in hotagList)
+                                {
+                                    <a href="/Tag/Tagsearch?tagid=@tag.TagID">
+                                        <span class="badge bg-success">@tag.Tagname</span>
+                                    </a>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style" id="exam2"> 小測驗</div>
+                        <div class="card-body" style="background-color:#fff;">
+                            <div class="card-title fw-bold">@Model.questiontitel</div>
+                            @foreach (var item in Model.questionList)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="answer" id="a@item.QuestionId" value="@item.IscorrectAnswer" />
+                                    <label class="form-check-label"
+                                           for="a_@item.QuestionId">
+                                        @item.QuestionOption
+                                    </label>
+                                </div>
+                            }
+
+                            <button class="btn btn-success mt-2" id="btnQuestion">送出</button>
+                            <div id="exam1"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        }
+        else
+        {
+            <h1 style="text-align:center;">此發問已被作者或管理員刪除。</h1>
+        }
+
+
+
+
+
+    </div>
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/lib/marked.min.js"></script>
+    <script src="~/lib/prettify.min.js"></script>
+    <script src="~/editormd.js"></script>
+    <script src="~/js/main.js"></script>
+    <script>
+       $(document).ready(function () {
+        //ArticleResponse
+           $("#articleResponseBtn").on("click", function () {
+               postFunction($("#articleResponse").val(), "ar")
+           });
+        //ArticleComment
+
+           $("#sureCommentMD").on("click", function () {
+               postFunction($("#commentMD").val(), "ac")
+           });
+
+            $("#articleResponse").mousedown(function () {
+                $("#noArticleResponse").hide(1000);
+
+            });
+            $("#CommentTextAreaBox").mousedown(function () {
+                $("#noArticleComment").hide(1000);
+            });
+
+
+        function postFunction(content, contentType) {
+                $.post("/Article/postDirect", {
+                    postUserName: "@userName",
+                    postCotent: content,
+                    postID: "@Model.ArticleId",
+                    postType: contentType,
+                    commentId: ""
+                }, function (response) {
+                    switch (response) {
+                        case "pleaseLogin":
+                            pleaseLogin();
+                            break;
+                        case "arSuccess":
+                            document.location.href = "/question/question?q=@Model.ArticleId";
+                            $("#noArticleResponse").focus();
+                            break;
+                        case "acSuccess":
+                            document.location.href = "/question/question?q=@Model.ArticleId";
+                            $("#noArticleComment").focus();
+                            break;
+                        case "arFalse":
+                            $("#noArticleResponse").show("fast");
+                            break;
+                        case "acFalse":
+                            $("#noArticleComment").show("fast");
+                            break;
+                        default:
+                            document.location.href = "/question/question?q=@Model.ArticleId";
+                            break;
+                    }
+                });
+           };
+           function pleaseLogin() {
+               document.getElementById("loginBtn").click();
+           };
+
+           noLogin = function () {
+               pleaseLogin();
+           };
+            function likeClick(type, targetType, userDo, clickItem) {
+        $.post("/article/userCollection", {
+            type: type,
+            userName: "@userName",
+            targetID: $(clickItem).prev("div").text(),
+            targetType: targetType,
+            userDo: userDo
+        }, function (response) {
+            switch (response) {
+                case "Success":
+                    switch (type) {
+                        case "like":
+                            $(clickItem).children().first().toggleClass("fa-thumbs-up");
+                            $(clickItem).children().first().toggleClass("fa-thumbs-o-up");
+                            break;
+                        case "collect":
+                            $(clickItem).children().first().toggleClass("fa-star");
+                            $(clickItem).children().first().toggleClass("fa-star-o");
+                            $(clickItem).children().first().toggleClass("starLight");
+                            break;
+                        case "follow":
+                            $(clickItem).children().first().toggleClass("fa-heart");
+                            $(clickItem).children().first().toggleClass("fa-heart-o");
+                            $(clickItem).children().first().toggleClass("heartLight");
+                            break;
+                        default:
+                            break;
+                    };
+                    break;
+                default:
+                    alert("錯誤");
+                    break;
+            }
+        });
+           };
+            @foreach (var Comment in Model.ArticleCommentList)
+            {
+                <text>
+            $(document).ready(function () {
+                $("#like_@Comment.CommentId").on("click", function () {
+                    var likeNum = parseInt($("#like_@Comment.CommentId").next().text());
+                    if ($(this).children().first().hasClass("fa-thumbs-o-up")) {
+                        likeNum++;
+                        $("#like_@Comment.CommentId").next().text(`${likeNum}`);
+                        likeClick("like", "C", "up", "#like_@Comment.CommentId");
+                    }
+                    else {
+                        likeNum--;
+                        $("#like_@Comment.CommentId").next().text(`${likeNum}`);
+                        likeClick("like", "C", "down", "#like_@Comment.CommentId");
+                            }
+                        });
+                  });
+                    </text>
+            }
+    });
+    </script>
+    @foreach (var Comment in Model.ArticleCommentList)
+    {
+        <script>
+    //CommentResponse
+    $("#-@Comment.CommentId-submit").on("click", function () {
+                $.post("/Article/postDirect", {
+                    postUserName: "@userName",
+                    postCotent: $("#-@Comment.CommentId-textarea").val(),
+                    postID: "@Model.ArticleId",
+                    postType: "cr",
+                    commentId: $("#-@Comment.CommentId-textarea").next().val()
+                }, function (response) {
+                    switch (response) {
+                        case "pleaseLogin":
+                            document.getElementById("loginBtn").click();
+                            break;
+                        case "crSuccess":
+                            document.location.href = "/question/question?q=@Model.ArticleId";
+                            break;
+                        case "crFalse":
+                            $("#-@Comment.CommentId-emptyError").show("fast");
+                            break;
+                        default:
+                            document.location.href = "/question/question?q=@Model.ArticleId";
+                            break;
+                    }
+                });
+            });
+
+            $("#-@Comment.CommentId-textarea").mousedown(function () {
+                $("#-@Comment.CommentId-emptyError").hide(1000);
+            });
+        </script>
+    }
+    <script>
+        //小測驗邏輯 By River
+        $(document).ready(function () {
+            $("#exam1").hide('fast')
+            $("#btnQuestion").click(function () {
+                $(".b12").remove();
+                var check = $("input[name='answer']:checked").val();
+                if (check == "T") {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-success'> <div class='answer fw-bold'> 正確答案 </div></div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+                else {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-danger'><div class='answer fw-bold' >錯誤!</div> <div class='answer ' >正確答案為:<div>@foreach (var item in Model.questionList)
+                                                                                    {
+                                                                                        if (@item.IscorrectAnswer == "T")
+                                                                                        {
+                                                                                            @item.QuestionOption
+                                                                                        }
+                                                                                    }</div></div> </div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
+

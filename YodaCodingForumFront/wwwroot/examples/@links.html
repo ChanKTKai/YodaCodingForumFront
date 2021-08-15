@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8" />
+    <title>@links - Editor.md examples</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="../css/editormd.css" />
+    <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+    <div id="layout">
+        <header>
+            <h1>@links</h1>
+            <p>Github Flavored Markdown extras syntax</p>
+        </header>
+        <div class="btns">
+            <button id="goto-line-btn">Goto line 90</button>
+            <button id="show-btn">Show editor</button>
+            <button id="hide-btn">Hide editor</button>
+            <button id="get-md-btn">Get Markdown</button>
+            <button id="get-html-btn">Get HTML</button>
+            <button id="watch-btn">Watch</button>
+            <button id="unwatch-btn">Unwatch</button>
+            <button id="preview-btn">Preview HTML (Press Shift + ESC cancel)</button>
+            <button id="fullscreen-btn">Fullscreen (Press ESC cancel)</button>
+            <button id="show-toolbar-btn">Show toolbar</button>
+            <button id="close-toolbar-btn">Hide toolbar</button>
+            <button id="toc-menu-btn">ToC Dropdown menu</button>
+            <button id="toc-default-btn">ToC default</button>
+        </div>
+        <div id="test-editormd" class="apple">
+        </div>
+        <h1 id="h1-hello">
+            <a name="HELLO" class="reference-link"></a><span class="header-link octicon octicon-link"></span>HELLO</h1>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="../editormd.js"></script>
+    <script type="text/javascript">
+        var testEditor;
+
+        $(function() {
+            // You can custom @link base url.
+            editormd.urls.atLinkBase = "https://github.com/";
+
+            testEditor = editormd("test-editormd", {
+                width: "90%",
+                height: 720,
+                toc: true,
+                //atLink    : false,    // disable @link
+                //emailLink : false,    // disable email address auto link
+                todoList: true,
+                path: '../lib/',
+                saveHTMLToTextarea: true
+            });
+        });
+        $("#get-html-btn").on('click', function() {
+            alert(testEditor.getTextareaSavedHTML());
+        });
+        $("#get-md-btn").on('click', function() {
+            alert(testEditor.getMarkdown());
+            $(".apple").html("<textarea>#HELLO</textarea>");
+        });
+    </script>
+</body>
+
+</html>

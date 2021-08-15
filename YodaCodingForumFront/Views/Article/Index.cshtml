@@ -1,0 +1,54 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>
+    待辦事項清單
+    <a href="/Todo/Create" class="btn btn-outline-success btn-md float-right">
+        新增
+    </a>
+</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>
+                帳號
+            </th>
+            <th>
+                姓名
+            </th>
+            <th>
+                點數
+            </th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            @foreach (var item in ViewBag.userinfo)
+            {
+                <td>
+                    @item.Account
+                </td>
+                <td>
+
+                    @item.UserName
+
+                </td>
+                <td>
+                    @item.PointAmount
+                </td>
+            }
+
+            <td>
+                <span class="float-right">
+                    <a href="/Todo/Edit/1" class="btn btn-outline-success btn-sm">編輯</a> |
+                    <a href="/Todo/Delete/1" class="btn btn-outline-danger btn-sm">刪除</a>
+                </span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+

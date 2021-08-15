@@ -1,0 +1,239 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+@model YodaCodingForumFront.Models.SearchModels.ArticleGenreViewMode
+
+@{
+    ViewData["Title"] = "問答版 - 優答Yoda Coding";
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+    string userName = hca.HttpContext.Session.GetString("userName") ?? "Guest";
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/main.css">
+</head>
+<body>
+    <div class="banner">
+        <div class="container">
+            <div class="ms-5">
+                <h3>YODA Coding</h3>
+                <div>優答大師技術分享論壇</div>
+                <div>
+                    <button type="button" class="btn btn-success mt-3" id="goquestion"> 我要發問</button>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+    <div class="container">
+
+        <div class="mt-4 col-9">
+            <form asp-controller="Article" asp-action="Search" method="get" class="container-fluid" style="padding-left:0px;padding-right:6px;">
+                <div class="input-group">
+                    <select id="select_category" name="Type" asp-for="Type" type="search">
+                        @foreach (var type in Model.Types)
+                        {
+                            if (type.Text == "A")
+                            {
+                                <option value="@type.Text">文章</option>
+                            }
+                            else if (type.Text == "Q")
+                            {
+                                <option selected="selected" value="@type.Text">問答</option>
+                            }
+                        }
+                        <option value="Tag">TAG</option>
+                    </select>
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" asp-for="SearchString">
+                    <input class="btn btn-outline-success" type="submit" value="Search">
+                </div>
+            </form>
+        </div>
+
+        <div class="row justify-content-center ">
+            <div class="col-9">
+                <div class="mt-4 col-12">
+                    <div class="card">
+                        <div class="card-header card_header_style">
+                            <div class="row align-items-start">
+                                <div class=""><i class="fa fa-question" aria-hidden="true"></i> 問答</div>
+                            </div>
+                        </div>
+                        <div id="userList">
+
+                            @foreach (var article in Model.ArticleList)
+                            {
+                                if (article.Status == "F" || article.Status == "A")
+                                {
+                                    <div class="card">
+                                        <div class="card-body cardbody_style">
+                                            <div class="row align-items-start">
+                                                <div class="col-1 view_group">
+                                                    <div>@article.Views</div>
+                                                    <div class="view_watch">瀏覽</div>
+                                                </div>
+
+                                                <div class="col-6">
+                                                    <a href="/question/question?q=@article.aid" class="index_title">@article.Title</a>
+                                                    <div>
+                                                        @foreach (var tag in article.tag)
+                                                        {
+
+                                                            <a href="/Tag/Tagsearch?tagid=@tag.TagId">
+                                                                <span class="badge bg-success">@tag.TagName</span>
+                                                            </a>
+                                                        }
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-1 mt-2">
+                                                    <div><i class="fa fa-commenting-o icon_color" aria-hidden="true"></i> @article.commendCount</div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <a href="/User/User?account=@article.CreateUser" target="_blank" class="index_title">@article.CreateUser</a>
+                                                    <div>@article.CreateTime</div>
+                                                </div>
+                                                @if (article.Status == "F")
+                                                {
+
+                                                    <div class="col-1 align-self-center">
+                                                        <div class=""><i class="fa fa-check text-success fa-lg" aria-hidden="true"></i></div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="col-1 align-self-center">
+                                                        <div class=""><i class="fa fa-question text-danger fa-lg" aria-hidden="true"></i></div>
+                                                    </div>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <br>
+                    <div class="">
+                        <ul class="pagination pagination-sm m-0 justify-content-center">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col-3">
+                <div class="card mt-4">
+                    <div class="card-header card_header_style">
+                        熱門問答
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var hotQuestion in Model.hotQuestionList)
+                        {
+                            <li class="list-group-item index_title relatedArticle">
+                                <a href="/question/question?q=@hotQuestion.itemID">@hotQuestion.itemTitle</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header card_header_style">
+                        熱門文章
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var hotArticle in Model.hotArticleList)
+                        {
+                            <li class="list-group-item index_title relatedArticle">
+                                <a href="/article/article?a=@hotArticle.itemID">@hotArticle.itemTitle</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header card_header_style">
+                        熱門Tag
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            @foreach (var tag in Model.hotTagList)
+                            {
+                                <a href="/Tag/Tagsearch?tagid=@tag.TagID">
+                                    <span class="badge bg-success">@tag.Tagname</span>
+                                </a>
+                            }
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header card_header_style" id="exam2"> 小測驗</div>
+                    <div class="card-body" style="background-color:#fff;">
+                        <div class="card-title fw-bold">@Model.questiontitel</div>
+                        @foreach (var item in Model.questionList)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="answer" id="a@item.QuestionId" value="@item.IscorrectAnswer" />
+                                <label class="form-check-label"
+                                       for="a_@item.QuestionId">
+                                    @item.QuestionOption
+                                </label>
+                            </div>
+                        }
+
+                        <button class="btn btn-success mt-2" id="btnQuestion">送出</button>
+                        <div id="exam1"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="~/js/jquery/jquery-3.6.0.min.js"></script>
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <script src="~/js/main.js"></script>
+    <script>
+        //小測驗邏輯 By River
+        $(document).ready(function () {
+            $("#exam1").hide('fast')
+            $("#btnQuestion").click(function () {
+                $(".b12").remove();
+                var check = $("input[name='answer']:checked").val();
+                if (check == "T") {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-success'> <div class='answer fw-bold'> 正確答案 </div></div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+                else {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-danger'><div class='answer fw-bold' >錯誤!</div> <div class='answer ' >正確答案為:<div>@foreach (var item in Model.questionList)
+                                                                                    {
+                                                                                        if (@item.IscorrectAnswer == "T")
+                                                                                        {
+                                                                                            @item.QuestionOption
+                                                                                        }
+                                                                                    }</div></div> </div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

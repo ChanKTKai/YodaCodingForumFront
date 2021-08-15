@@ -1,0 +1,170 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+@model YodaCodingForumFront.Models.UserModels.UserView
+@{
+    string userName = hca.HttpContext.Session.GetString("userName") ?? "Guest";
+    ViewData["Title"] = "會員："+userName+" - 編輯會員資料 - 優答Yoda Coding";
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+}
+
+
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <title>Document</title>
+</head>
+<body>
+    <div class="wrap ">
+        <div class="banner">
+            <div class="container d-flex justify-content-between">
+                <h3>編輯個人資料</h3>
+                <div>
+                    <!-- <button type="button" class="btn btn-success"><i class="fa fa-plus-square" aria-hidden="true"></i> 我要發文</button> -->
+                </div>
+            </div>
+        </div>
+        <form action="" method="post">
+            <div class="container">
+                <div class="row justify-content-center ">
+                    <div class="col-12">
+                        <div class="mt-4 col-12">
+                            <div class="post_container">
+
+                                <h3>編輯個人資料</h3>
+                                <div class=" mt-2">
+                                    <div class="">姓名</div>
+
+                                    
+                                        <input class="form-control " id="" placeholder="" value="@Model.userinfo.Uname" name="userName">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">暱稱</div>
+                                   
+                                        <input class="form-control " id="" placeholder="" value="@Model.userinfo.UNickname" name="userNickName">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">密碼</div>
+                                   
+                                        <input class="form-control " id="" type="password" placeholder="" value="@Model.userinfo.UPassword" name="userPassword">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">性別</div>
+                                    <select name="userSax" id="">
+                                       
+                                            @foreach (var item in Model.UsaxTypeList)
+                                            {
+                                                @if (item.code == Model.userinfo.USax)
+                                                {
+                                        <option selected value="@item.code">@item.name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option  value="@item.code">@item.name</option>
+                                                }
+                                            }
+                                        
+                                    </select>
+
+                                  
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">出生年月日</div>
+                                    
+                                    <input class="" id="date" type="date" value="@Model.userinfo.UBirthday" name="userBirthday">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">地址</div>
+                                    
+                                        <input class="form-control " id="" placeholder="" value="@Model.userinfo.UAddress" name="userAdress">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">電話</div>
+                                    
+                                        <input class="form-control " id="" placeholder="" value="@Model.userinfo.UPhone" name="userPhone">
+                                    
+                                </div>
+                                <div class=" mt-2">
+                                    <div class="">工作經歷</div>
+                                    
+                                    <textarea class="form-control mt-3" placeholder="內文" rows="10" name="userExperience">@Model.userinfo.UExperience</textarea>
+                                    
+
+                                </div>
+                                <div class="mt-2">
+                                    <div class="">專業成就</div>
+                                   
+                                    <textarea class="form-control mt-3" placeholder="內文" rows="10" name="userProfession">@Model.userinfo.UProfession</textarea>
+                                    
+                                </div>
+
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-success mt-3 " id="goCommemt"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModal5">
+                                        更新會員資料
+                                    </button>
+                                    <a href="javascript:history.go(-1)"><button type="button" class="btn btn-secondary mt-3 ms-2">取消</button></a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="exampleModalLabel" style="color:black">確定更新會員資料？</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                請確認會員資料是否正確。
+                                <textarea id="textNoneMD" name="textNoneMD" style="display:none;"></textarea>
+                                
+                                    <input id="userId" name="userId" value="@Model.userinfo.Uid" style="display:none;" />
+                                
+
+                            </div>
+                            <div class="modal-footer">
+                                <input type="submit" value="確定" class="btn btn-success" />
+                                <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </form>
+
+
+
+       
+    </div>
+
+
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/lib/marked.min.js"></script>
+    <script src="~/lib/prettify.min.js"></script>
+    <script src="~/editormd.js"></script>
+
+</body>
+</html>

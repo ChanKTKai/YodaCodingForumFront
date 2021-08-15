@@ -1,0 +1,168 @@
+﻿@model YodaCodingForumFront.Controllers.ArticleController.ArticleEditDetail
+@{
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+    var tagCount = Model.TagNum;
+    ViewData["Title"] = "編輯問答 : " + Model.ArticleTitle + " - 優答Yoda Coding";
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/css/editormd.css" />
+</head>
+
+<body>
+    <div class="banner">
+        <div class="container d-flex justify-content-between">
+            <h3>編輯問題</h3>
+        </div>
+    </div>
+    <form method="post" action="">
+        <div class="container">
+            <div class="row justify-content-center ">
+                <div class="col-12">
+                    <div class="mt-4 col-12">
+                        <div class="post_container">
+                            <h3>問題標題</h3>
+                            <input class="form-control" style="margin-bottom: 20px; height: 55px; font-size: 16pt;" name="articleTitle" id="articleTitle" placeholder="標題"
+                                   value="@Model.ArticleTitle" />
+
+                            <div id="layout">
+                                <div id="test-editormd">
+                                    <textarea>@Model.ArticleContent</textarea>
+                                </div>
+                            </div>
+
+                            <span style="font-size:20px;margin:15px 0px;display:inline-block;">Tag 標籤: </span>
+                            <span id="tagBag">
+                                @for (int k = 1; k <= tagCount; k++)
+                                {
+
+                                    <span id="oldtag_@k" class="alert-success tagStyle">
+                                        <i class="fa fa-tag"
+                                           style="margin-right:3px;" aria-hidden="true"></i>
+                                        <span>@Model.ArticleTagList[k - 1]</span>
+                                        <input type="hidden" name="eachTagName" value="@Model.ArticleTagList[k-1]" />
+                                        <i class="fa fa-times-circle" style="cursor: pointer;" aria-hidden="true"
+                                           id="newAddTag_@k"></i>
+                                    </span>
+                                }
+
+
+                            </span>
+                            <div>
+
+                                <label>
+                                    <input list="taglist" name="myBrowser" id="tagInput" style="height:40px;width:200px">
+                                </label>
+                                <datalist id="taglist">
+                                    @foreach (var tag in Model.tagList)
+                                    {
+                                        <option value="@tag" />
+                                    }
+                                </datalist>
+                                <div id="addTagBtn" class="btn btn-success" style="margin-bottom:3.5px">新增Tag</div>
+                                <div class="mb-3" style="text-align: left;display:none;" id="tagEmpty">
+                                    <span class="error text-danger">請輸入正確的Tag名稱</span>
+                                </div>
+
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" style="margin-right:10px" class="btn btn-success mt-3 ms-2" id="goArticle"
+                                        data-bs-toggle="modal" data-bs-target="#exampleModal5">
+                                    更新問答
+                                </button>
+                                <a href="javascript:history.go(-1) " class="ms-3"><button type="button" class="btn btn-secondary mt-3">取消</button></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">確定將更新問答？</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        請確認問答內容符合規範範圍。
+                        <textarea id="textNoneMD" name="textNoneMD" style="display:none;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" value="確定" class="btn btn-success" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/editormd.js"></script>
+    <script type="text/javascript">
+        var testEditor;
+
+        $(function () {
+
+            testEditor = editormd("test-editormd", {
+                width: "100%",
+                height: 720,
+                toc: true,
+                todoList: true,
+                path: '../lib/',
+                saveHTMLToTextarea: true
+            });
+        });
+        $(document).ready(function () {
+            $("#goArticle").on('click', function () {
+                $("#textNoneMD").val(testEditor.getMarkdown());
+                //alert(testEditor.getMarkdown());
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        var i = @tagCount;
+        @for (int j = 1; j <= tagCount; j++)
+         {<text>
+                $(`#newAddTag_${@j}`).on("click", function () {
+                    $(`#oldtag_${@j}`).remove();
+                });
+          </text>
+         }
+        $("#addTagBtn").on("click", function () {
+            $.post("/article/tagcheck", { tagAlsoName: $("#tagInput").val() }, function (response) {
+
+                            if (response == "tagEmpty") {
+                    $("#tagEmpty").show("fast");
+                            }
+                            else {
+                                i++;
+                                var newtagSpan = $(`<span class="alert-success tagStyle"><i class="fa fa-tag"
+                                                style="margin-right:3px;" aria-hidden="true"></i>
+                                                <span>${response}</span>
+                                                <input type="hidden" name="eachTagName" value="${response}"/>
+                                                <i class="fa fa-times-circle" style="cursor: pointer;" aria-hidden="true"
+                                                id="newAddTag_${i}"></i></span>`).appendTo('#tagBag');
+                    $("#tagInput").val("");
+                    $("#tagInput").focus();
+                    $(`#newAddTag_${i}`).on("click", function () {
+                        newtagSpan.remove();
+                    });
+                    //}
+                }
+            });
+        });
+        $("#tagInput").focus(function () {
+            $("#tagEmpty").hide(1000);
+        });
+    </script>
+
+</body>
+
+</html>

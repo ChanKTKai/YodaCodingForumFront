@@ -1,0 +1,97 @@
+﻿@model YodaCodingForumFront.Controllers.ArticleController.commemtDelete
+@{
+    ViewData["Title"] = "編輯回答 : " + Model.ArticleTitle + " - 優答Yoda Coding";
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+}
+
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/css/editormd.css" />
+</head>
+
+<body>
+    <div class="banner">
+        <div class="container d-flex justify-content-between">
+            <h3>編輯回答</h3>
+        </div>
+    </div>
+    <form method="post" action="">
+        <div class="container">
+            <div class="row justify-content-center ">
+                <div class="col-9">
+                    <div class="mt-4 col-12">
+                        <div class="post_container">
+                            <h3>問題</h3>
+                            <input class="form-control" style="margin-bottom:20px;" name="articleTitle" id="articleTitle" placeholder="標題" disabled
+                                   value="@Model.ArticleTitle" />
+                            <h3>回答</h3>
+                            <div id="layout">
+                                <div id="test-editormd">
+                                    <textarea>@Model.Commemt.CommentContent</textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-success mt-3 ms-2" id="goCommemt"
+                                        data-bs-toggle="modal" data-bs-target="#exampleModal5">
+                                    更新回答
+                                </button>
+                                <a href="javascript:history.go(-1)" class="ms-3"><button type="button" class="btn btn-secondary mt-3">取消</button></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">確定更新回答內容？</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        請確認回答內容符合規範範圍。
+                        <textarea id="textNoneMD" name="textNoneMD" style="display:none;"></textarea>
+                        <input id="articleId" name="articleId" value="@Model.ArticleId" style="display:none;" />
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" value="確定" class="btn btn-success" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/editormd.js"></script>
+    <script type="text/javascript">
+        var testEditor;
+
+        $(function () {
+
+            testEditor = editormd("test-editormd", {
+                width: "100%",
+                height: 720,
+                toc: true,
+                todoList: true,
+                path: '../lib/',
+                saveHTMLToTextarea: true
+            });
+        });
+        $(document).ready(function () {
+            $("#goCommemt").on('click', function () {
+                $("#textNoneMD").val(testEditor.getMarkdown());
+                //alert(testEditor.getMarkdown());
+            });
+        });
+    </script>
+</body>
+
+</html>

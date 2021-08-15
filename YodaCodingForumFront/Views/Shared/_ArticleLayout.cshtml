@@ -1,0 +1,426 @@
+﻿
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+@{
+    string userName = hca.HttpContext.Session.GetString("userName") ?? "Guest";
+    var date = DateTime.Now.ToString("mmss");
+    var currentController = ViewContext.RouteData.Values["controller"].ToString();
+
+}
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="~/css/bootstrap/bootstrap.min.css?@date">
+    <link rel="stylesheet" href="~/css/main.css?@date">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    @RenderSection("MyStyle", required: false)
+</head>
+<body>
+    <div class="wrap">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" >
+            <div class="container-fluid container">
+                <a class="navbar-brand" href="/Article/articlewall"><img src="~/img/logo.png" alt=""></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarScroll">
+                    <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+                        <li class="nav-item">
+                            <a id="articleTitle" class="nav-link" href="/Article/articleWall">文章</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="questionTitle" class="nav-link" href="/question/questionWall">問答</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="TAGTitle" class="nav-link" href="/tag/tagwall">TAG</a>
+                        </li>
+                        @*<li class="nav-item">
+                                <a id="chatTitle" class="nav-link " href="#" tabindex="-1">聊天室</a>
+                            </li>*@
+
+                    </ul>
+                    @if (userName == "Guest")
+                    {
+
+                        <ul class="navbar-nav">
+                            <div class="nav-item">
+                                <a class="nav-link" id="loginBtn" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">Login</a>
+                            </div>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav">
+                            <div class="nav-item">
+                                <a class="nav-link" href="/User/User?account=@userName">@userName</a>
+                            </div>
+                        </ul>
+                        <ul class="navbar-nav">
+                            <div class="nav-item">
+                                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#exampleModalLogout">Log out</a>
+                            </div>
+                        </ul>
+                    }
+                </div>
+
+            </div>
+        </nav>
+
+        @*登入Fade*@
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">登入</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @*ClickArticle*@
+                        <input id="ifClickArticlePage" value="no" style="display:none;" />
+                        @*ClickArticle*@
+                        <div class="mb-3">
+                            <label for="account" class="col-form-label">帳號</label>
+                            <input type="text" class="form-control" id="account" name="UserName" value="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="col-form-label">密碼</label>
+                            <input type="password" class="form-control" id="password" name="Password" value="" />
+                        </div>
+                        <div class="mb-3" style="text-align: center;display:none;" id="userError">
+                            <span class="error text-danger">帳號密碼錯誤，請重新輸入</span>
+                        </div>
+                        <div class="mb-3" style="text-align: center;display:none;" id="userEmpty">
+                            <span class="error text-danger">帳號及密碼不得為空，請重新輸入</span>
+                        </div>
+                        <div class="mb-3" style="text-align: center;display:none;" id="userUnvertified">
+                            <span class="error text-danger">此帳戶尚未驗證，請至E-mail驗證。</span>
+                        </div>
+                        <div class="mb-3" style="text-align: center; display: none; color: #FFB114;" id="userBlock">
+                            <span class="error text-danger">此帳戶已被停止使用。</span>
+                        </div>
+                        <div class="mb-3" style="text-align:right;">
+                            <a href="/article/registerMember">
+                                <label for="" style="cursor: pointer;" class="col-form-label  index_title">還沒有帳號嗎？點我註冊</label>
+                                <input style="display:none;" />
+                            </a>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" id="sureButton" value="確定" class="btn btn-success" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*登出*@
+        <div class="modal fade" id="exampleModalLogout" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">確定要登出嗎？</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        登出後將回到首頁
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/article/logout"><button class="btn btn-success">確定</button></a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="ReportModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">檢舉</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="reportFormAction" action="/article/reportForm/" method="post">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <select name="reportReason" id="reportOption" class="article_report">
+                                    <option value="I" selected="selected">資訊無關</option>
+                                    <option value="C">抄襲</option>
+                                    <option value="R">謾罵</option>
+                                    <option value="F">洗文</option>
+                                    <option value="A">廣告</option>
+                                    <option value="S">色情</option>
+                                    <option value="O">其他</option>
+                                </select>
+                            </div>
+                            <input style="display:none;" id="reportRemark" name="reportRemark" class="form-control mt-3" placeholder="主要原因" rows="5" />
+                            <textarea name="reportContent" class="form-control mt-3" placeholder="請詳述說明檢舉原因" rows="5" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success">送出</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        @RenderBody()
+        <footer class="mainfooter" role="contentinfo">
+            <div class="footer-middle">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6">
+                            <!--Column1-->
+                            <div class="footer-pad">
+                                <h4>關於</h4>
+                                <ul class="list-unstyled">                                   
+                                    <li><a href="#">關於我們</a></li>
+                                    <li><a href="#">使用者條款</a></li>
+                                    <li><a href="#">服務契約</a></li>
+                                    <li><a href="#">隱私權政策</a></li>
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <!--Column1-->
+                            <div class="footer-pad">
+                                <h4>幫助</h4>
+                                <ul class="list-unstyled">
+                                    <li><a href="#">常見問題</a></li>
+                                    <li><a href="#">合作洽談</a></li>
+                                    <li><a href="#">功能更新</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <!--Column1-->
+                            <div class="footer-pad">
+                                <h4>友站連結</h4>
+                                <ul class="list-unstyled">
+                                    <li><a href="#">it邦幫忙</a></li>
+                                    <li><a href="#">stack overflow</a></li>
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h4>追蹤我們</h4>
+                            <ul class="social-network social-circle">
+                                <li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+                                <li><a href="#" class="icoLinkedin" title="Linkedin"><i class="fa fa-linkedin"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 copy">
+                            <p class="text-center">&copy; Copyright 2021 - YODA Coding.  All rights reserved.</p>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="~/js/jquery/jquery-3.6.0.min.js"></script>
+    <script src="~/js/bootstrap/bootstrap.min.js"></script>
+    <script src="~/js/main.js?@date"></script>
+    <script>
+        $(document).ready(function () {
+            $("#sureButton").on("click", function () {
+                $.post('/Article/checkLogin', { userName: $('#account').val(), userPassword: $('#password').val(), clickArticle: $("#ifClickArticlePage").val() }, function (response) {
+                    switch (response) {
+                        case "Success":
+                            document.location.href = location.href;
+                            break;
+                        case "articleSuccess":
+                            document.location.href = "/article/articlepage";
+                            break;
+                        case "questionSuccess":
+                            document.location.href = "/question/questionpage";
+                            break;
+                        case "unverified": userUnvertified
+                            $("#userUnvertified").show("fast");
+                            $("#account").css("borderColor", "#FFB114");
+                            $("#password").css("borderColor", "#FFB114");
+                            break;
+                        case "block":
+                            $("#userBlock").show("fast");
+                            $("#account").css("borderColor", "red");
+                            $("#password").css("borderColor", "red");
+                            break;
+                        case "False":
+                            $("#userError").show("fast");
+                            $("#account").css("borderColor", "red");
+                            $("#password").css("borderColor", "red");
+                            break;
+                        default:
+                            $("#userEmpty").show("fast");
+                            $("#account").css("borderColor", "red");
+                            $("#password").css("borderColor", "red");
+                            break;
+
+                    }
+                });
+            });
+            $("#account").mousedown(function () {
+                changeAccountColor();
+            });
+            $("#password").mousedown(function () {
+                changeAccountColor();
+            });
+
+
+            function changeAccountColor() {
+                $("#userError").hide(1000);
+                $("#userEmpty").hide(1000);
+                $("#userUnvertified").hide(1000);
+                $("#userBlock").hide(1000);
+                $("#account").css("borderColor", "#ced4da");
+                $("#password").css("borderColor", "#ced4da");
+            };
+            $("#goarticle").on("click", function () {
+                if ("@userName" == "Guest") {
+                    $("#ifClickArticlePage").val("article");
+                    document.getElementById("loginBtn").click();
+                }
+                else {
+                    document.location.href = "/article/articlepage";
+                }
+            });
+            $("#goquestion").on("click", function () {
+                if ("@userName" == "Guest") {
+                    $("#ifClickArticlePage").val("question");
+                    document.getElementById("loginBtn").click();
+                }
+                else {
+                    document.location.href = "/question/questionpage";
+                }
+            });
+            $("#articleTitle").removeClass("active");
+            $("#questionTitle").removeClass("active");
+            $("#TAGTitle").removeClass("active");
+            $("#chatTitle").removeClass("active");
+            switch ("@currentController") {
+                case "Article":
+                    $("#articleTitle").addClass("active");
+                    break;
+                case "Question":
+                    $("#questionTitle").addClass("active");
+                    break;
+                case "Tag":
+                    $("#TAGTitle").addClass("active");
+                    break;
+                case "Chat":
+                    $("#chatTitle").addClass("active");
+                    break;
+                default:
+                    break;
+            };
+            $("#reportOption").change(function () {
+                var selectValue = $("#reportOption").val();
+                if (selectValue == "O") {
+                    $("#reportRemark").show();
+                }
+                else {
+                    $("#reportRemark").hide();
+                }
+            });
+
+            $(".preReport").on("click", function () {
+                var targetID = $(this).next().text();
+                var articleID = $(this).next().next().text();
+                $("#reportFormAction").prop("action", `/article/reportForm/${targetID}/${articleID}`);
+            });
+
+            //按讚收藏追蹤
+           function likeClick(type, targetType, userDo, clickItem) {
+               $.post("/article/userCollection", {
+                   type:type,
+                   userName: "@userName",
+                   targetID: $(clickItem).prev("div").text(),
+                   targetType: targetType,
+                   userDo: userDo
+               }, function (response) {
+                   switch (response) {
+                       case "Success":
+                           switch (type) {
+                               case "like":
+                                   $(clickItem).children().first().toggleClass("fa-thumbs-up");
+                                   $(clickItem).children().first().toggleClass("fa-thumbs-o-up");
+                                   break;
+                               case "collect":
+                                   $(clickItem).children().first().toggleClass("fa-star");
+                                   $(clickItem).children().first().toggleClass("fa-star-o");
+                                   $(clickItem).children().first().toggleClass("starLight");
+                                   break;
+                               case "follow":
+                                   $(clickItem).children().first().toggleClass("fa-heart");
+                                   $(clickItem).children().first().toggleClass("fa-heart-o");
+                                   $(clickItem).children().first().toggleClass("heartLight");
+                                   break;
+                               default:
+                                   break;
+                           };
+                           break;
+                       default:
+                           alert("錯誤");
+                           break;
+                   }
+               });
+            };
+            //觸發登入
+            function pleaseLogin() {
+                document.getElementById("loginBtn").click();
+            };
+
+            noLogin = function () {
+                pleaseLogin();
+            };
+
+           //按讚
+           $("#articlelikediv").on("click", function () {
+                   var likeNum = parseInt($("#articlelikediv").next().text());
+               if ($(this).children().first().hasClass("fa-thumbs-o-up")) {
+                   likeNum++;
+                   $("#articlelikediv").next().text(`${likeNum}`);
+                   likeClick("like", "A", "up", "#articlelikediv");
+               }
+               else {
+                   likeNum--;
+                   $("#articlelikediv").next().text(`${likeNum}`);
+                   likeClick("like", "A", "down", "#articlelikediv");
+               }
+           });
+           //收藏
+           $("#articlecollectdiv").on("click", function () {
+               if ($(this).children().first().hasClass("fa-star-o")) {
+                   likeClick("collect", "A", "up", "#articlecollectdiv");
+               }
+               else {
+                   likeClick("collect", "A", "down", "#articlecollectdiv");
+               }
+           });
+           $("#articleFollowdiv").on("click", function () {
+               if ($(this).children().first().hasClass("fa-heart-o")) {
+                   likeClick("follow", "A", "up", "#articleFollowdiv");
+               }
+               else {
+                   likeClick("follow", "A", "down", "#articleFollowdiv");
+               }
+           });
+
+        });
+
+
+    </script>
+
+    
+    @await RenderSectionAsync("MyScripts", required: false)
+</body>
+</html>

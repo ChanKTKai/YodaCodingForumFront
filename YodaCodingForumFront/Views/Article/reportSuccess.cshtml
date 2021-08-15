@@ -1,0 +1,60 @@
+﻿@model List<string>
+@{
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+    ViewData["Title"] = "檢舉成功 - 優答Yoda Coding";
+}
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/css/editormd.css" />
+</head>
+
+<body>
+    <div class="banner">
+        <div class="container d-flex justify-content-between">
+            <h3>檢舉成功</h3>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row justify-content-center ">
+            <div class="col-12">
+                <div class="mt-4 col-12">
+                    <div class="post_container">
+                        <h3 style="text-align:center;">感謝您的檢舉，我們將仔細審核內容，謝謝。</h3>
+                        <div class="d-flex justify-content-center">
+                            @if (Model[0] == "A")
+                            {
+                                <a href="/article/article?a=@Model[1]">
+                                    <button type="button" style="margin-right:10px" class="btn btn-success mt-3 ms-2">
+                                        回文章
+                                    </button>
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/question/question?q=@Model[1]">
+                                    <button type="button" style="margin-right:10px" class="btn btn-success mt-3 ms-2">
+                                        回問答
+                                    </button>
+                                </a>
+                            }
+                            <a href="/article/articlewall">
+                                <button type="button" class="btn btn-secondary mt-3">回首頁</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="~/examples/js/jquery.min.js"></script>
+    <script src="~/editormd.js"></script>
+</body>
+
+</html>

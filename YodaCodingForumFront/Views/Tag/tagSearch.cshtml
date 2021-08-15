@@ -1,0 +1,457 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor hca
+@model YodaCodingForumFront.Models.SearchModels.TagList
+@{
+    foreach (var tag in Model.tags)
+    {
+        ViewData["Title"] = tag.tagname+" - Tag搜尋 - 優答Yoda Coding";
+    }
+    Layout = "~/Views/Shared/_ArticleLayout.cshtml";
+    string userName = hca.HttpContext.Session.GetString("userName") ?? "Guest";
+    var currentController = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+<body>
+    <div class="wrap">
+
+        <div class="container">
+            @foreach (var tag in Model.tags)
+            {
+                <div class="mt-4 col-9 d-flex justify-content-between">
+                    <div>
+                        <h4>@tag.tagname 相關Tag</h4>
+                        <p>共有 @tag.articleCount 則文章、@tag.questionCount 則問答</p>
+                    </div>
+                    <div>
+                        <span class="me-2">@tag.followCount 人追蹤</span>
+                        <div style="display:none">@tag.tagid</div>
+                        @if (tag.userIsFollow == 1)
+                        {
+                            <button class="btn btn-success" id="tagFollowBtn_@tag.tagid"><i class="fa fa-heart" aria-hidden="true" id="tagFollowBtn"></i> 追蹤</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success" id="tagFollowBtn_@tag.tagid"><i class="fa fa-heart-o" aria-hidden="true" id="tagFollowBtn"></i> 追蹤</button>
+                        }
+                    </div>
+                </div>
+            }
+            <div class="row justify-content-center ">
+
+                <div class="col-9">
+                    <div class="mt-4 col-12">
+                        <ul class="nav d-flex justify-content-start search_ul" id="pills-tab" role="tablist">
+                            <li class="nav-item col-1 search_hover me-1" role="presentation">
+                                <div class="" id="pills-searchall-tab" data-bs-toggle="pill" data-bs-target="#pills-searchall" type="button" role="tab" aria-controls="pills-searchall" aria-selected="true">全部</div>
+                            </li>
+                            <li class="nav-item col-1 search_hover me-1" role="presentation">
+                                <div class="" id="pills-searcharticle-tab" data-bs-toggle="pill" data-bs-target="#pills-searcharticle" type="button" role="tab" aria-controls="pills-searcharticle" aria-selected="false">文章</div>
+                            </li>
+                            <li class="nav-item  col-1 search_hover" role="presentation">
+                                <div class="" id="pills-searchqa-tab" data-bs-toggle="pill" data-bs-target="#pills-searchqa" type="button" role="tab" aria-controls="pills-searchqa" aria-selected="false">問答</div>
+                            </li>
+                        </ul>
+
+                        <div class="card">
+                            <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade show active" id="pills-searchall" role="tabpanel" aria-labelledby="pills-searchall-tab">
+
+                                    @foreach (var article in Model.articles)
+                                    {
+                                        if (article.Type == "A")
+                                        {
+                                            <div class="card">
+                                                <div class="card-body cardbody_style">
+                                                    <div class="row align-items-start">
+                                                        <div class="col-1 view_group">
+                                                            <div>@article.Views</div>
+                                                            <div class="view_watch">瀏覽</div>
+                                                        </div>
+
+                                                        <div class="col-6">
+                                                            <a href="/article/article?a=@article.aid" class="index_title">@article.Title</a>
+                                                            <div>
+                                                                @foreach (var tag in article.tag)
+                                                                {
+                                                                    <span class="badge bg-success">@tag.TagName</span>
+                                                                }
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-thumbs-o-up icon_color" aria-hidden="true"></i> @article.Like</div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-commenting-o icon_color" aria-hidden="true"></i> @article.commendCount</div>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <a href="/User/User?account=@article.CreateUser" target="_blank" class="index_title">@article.CreateUser</a>
+                                                            <div>@article.CreateTime</div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="card">
+                                                <div class="card-body cardbody_style">
+                                                    <div class="row align-items-start">
+                                                        <div class="col-1 view_group">
+                                                            <div>@article.Views</div>
+                                                            <div class="view_watch">瀏覽</div>
+                                                        </div>
+
+                                                        <div class="col-6">
+                                                            <a href="/question/question?q=@article.aid" class="index_title">@article.Title</a>
+                                                            <div>
+                                                                @foreach (var tag in article.tag)
+                                                                {
+                                                                    <span class="badge bg-success">@tag.TagName</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-thumbs-o-up icon_color" aria-hidden="true"></i> @article.Like</div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-commenting-o icon_color" aria-hidden="true"></i> @article.commendCount</div>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <a href="/User/User?account=@article.CreateUser" target="_blank" class="index_title">@article.CreateUser</a>
+                                                            <div>@article.CreateTime</div>
+                                                        </div>
+                                                        @if (article.Status == "A")
+                                                        {
+
+
+                                                            <div class="col-1 align-self-center">
+                                                                <div class=""><i class="fa fa-question text-danger fa-lg" aria-hidden="true"></i></div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="col-1 align-self-center">
+                                                                <div class=""><i class="fa fa-check text-success fa-lg" aria-hidden="true"></i></div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+
+                                <div class="tab-pane fade" id="pills-searcharticle" role="tabpanel" aria-labelledby="pills-searcharticle-tab">
+                                    <div class="tab-pane fade show active" id="pills-searchall" role="tabpanel" aria-labelledby="pills-searchall-tab">
+
+                                        @foreach (var article in Model.articles)
+                                        {
+                                            if (article.Type == "A")
+                                            {
+                                                <div class="card">
+                                                    <div class="card-body cardbody_style">
+                                                        <div class="row align-items-start">
+                                                            <div class="col-1 view_group">
+                                                                <div>@article.Views</div>
+                                                                <div class="view_watch">瀏覽</div>
+                                                            </div>
+
+                                                            <div class="col-6">
+                                                                <a href="/article/article?a=@article.aid" class="index_title">@article.Title</a>
+                                                                <div>
+                                                                    @foreach (var tag in article.tag)
+                                                                    {
+                                                                        <span class="badge bg-success">@tag.TagName</span>
+                                                                    }
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-1 mt-2">
+                                                                <div><i class="fa fa-thumbs-o-up icon_color" aria-hidden="true"></i> @article.Like</div>
+                                                            </div>
+                                                            <div class="col-1 mt-2">
+                                                                <div><i class="fa fa-commenting-o icon_color" aria-hidden="true"></i> @article.commendCount</div>
+                                                            </div>
+                                                            <div class="col-3">
+                                                                <a href="/User/User?account=@article.CreateUser" target="_blank" class="index_title">@article.CreateUser</a>
+                                                                <div>@article.CreateTime</div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="pills-searchqa" role="tabpanel" aria-labelledby="pills-searchqa-tab">
+
+                                    @foreach (var qa in Model.articles)
+                                    {
+                                        if (qa.Type == "Q")
+                                        {
+                                            <div class="card">
+                                                <div class="card-body cardbody_style">
+                                                    <div class="row align-items-start">
+                                                        <div class="col-1 view_group">
+                                                            <div>@qa.Views</div>
+                                                            <div class="view_watch">瀏覽</div>
+                                                        </div>
+
+                                                        <div class="col-6">
+                                                            <a href="/question/question?q=@qa.aid" class="index_title">@qa.Title</a>
+                                                            <div>
+                                                                @foreach (var tag in qa.tag)
+                                                                {
+                                                                    <span class="badge bg-success">@tag.TagName</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-thumbs-o-up icon_color" aria-hidden="true"></i> @qa.Like</div>
+                                                        </div>
+                                                        <div class="col-1 mt-2">
+                                                            <div><i class="fa fa-commenting-o icon_color" aria-hidden="true"></i> @qa.commendCount</div>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <a href="/User/User?account=@qa.CreateUser" target="_blank" class="index_title">@qa.CreateUser</a>
+                                                            <div>@qa.CreateTime</div>
+                                                        </div>
+                                                        @if (qa.Status == "A")
+                                                        {
+                                                            <div class="col-1 align-self-center">
+                                                                <div class=""><i class="fa fa-question text-danger fa-lg" aria-hidden="true"></i></div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="col-1 align-self-center">
+                                                                <div class=""><i class="fa fa-check text-success fa-lg" aria-hidden="true"></i></div>
+                                                            </div>
+                                                        }
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <br>
+                        <div class="">
+                            <ul class="pagination pagination-sm m-0 justify-content-center">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門文章
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var hotArticle in Model.hotArticleList)
+                            {
+                                <li class="list-group-item index_title relatedArticle">
+                                    <a href="/article/article?a=@hotArticle.itemID">@hotArticle.itemTitle</a>
+                                </li>
+
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門問答
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var hotQuestion in Model.hotQuestionList)
+                            {
+                                <li class="list-group-item index_title relatedArticle">
+                                    <a href="/question/question?q=@hotQuestion.itemID">@hotQuestion.itemTitle</a>
+                                </li>
+
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style">
+                            熱門Tag
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                @foreach (var hottag in Model.hotTagList)
+                                {
+                                    <a href="/Tag/Tagsearch?tagid=@hottag.itemID">
+                                        <span class="badge bg-success">@hottag.itemTitle</span>
+                                    </a>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header card_header_style" id="exam2"> 小測驗</div>
+                        <div class="card-body" style="background-color:#fff;">
+                            <div class="card-title fw-bold">@Model.questiontitel</div>
+                            @foreach (var item in Model.questionList)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="answer" id="a@item.QuestionId" value="@item.IscorrectAnswer" />
+                                    <label class="form-check-label"
+                                           for="a_@item.QuestionId">
+                                        @item.QuestionOption
+                                    </label>
+                                </div>
+                            }
+
+                            <button class="btn btn-success mt-2" id="btnQuestion">送出</button>
+                            <div id="exam1"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script src="~/js/jquery/jquery-3.6.0.min.js"></script>
+        <script src="~/js/bootstrap/bootstrap.min.js"></script>
+        <script src="~/js/main.js"></script>
+
+        <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            //上面的NAV用的
+            $("#articleTitle").removeClass("active");
+            $("#questionTitle").removeClass("active");
+            $("#TAGTitle").removeClass("active");
+            $("#chatTitle").removeClass("active");
+            switch ("@currentController") {
+                    case "Article":
+                        $("#articleTitle").addClass("active");
+                        break;
+                    case "Question":
+                        $("#questionTitle").addClass("active");
+                        break;
+                    case "Tag":
+                        $("#TAGTitle").addClass("active");
+                        break;
+                    case "Chat":
+                        $("#chatTitle").addClass("active");
+                        break;
+                    default:
+                        break;
+            };
+
+            //按讚收藏追蹤
+           function likeClick(type, targetType, userDo, clickItem) {
+                $.post("/Tag/userCollection", {
+                    type: type,
+                    userName: "@userName",
+                    targetID: $(clickItem).prev("div").text(),
+                    targetType: targetType,
+                    userDo: userDo
+                    }, function (response) {
+                    switch (response) {
+                            case "pleaseLogin":
+                                pleaseLogin();
+                                break;
+                            case "Success":
+                                switch (type) {
+                                    case "like":
+                                        $(clickItem).children().first().toggleClass("fa-thumbs-up");
+                                        $(clickItem).children().first().toggleClass("fa-thumbs-o-up");
+                                        break;
+                                    case "collect":
+                                        $(clickItem).children().first().toggleClass("fa-star");
+                                        $(clickItem).children().first().toggleClass("fa-star-o");
+                                        $(clickItem).children().first().toggleClass("starLight");
+                                        break;
+                                    case "follow":
+                                        $(clickItem).children().first().toggleClass("fa-heart");
+                                        $(clickItem).children().first().toggleClass("fa-heart-o");
+                                        $(clickItem).children().first().toggleClass("heartLight");
+                                        break;
+                                    default:
+                                        break;
+                                };
+                                break;
+                            default:
+                                alert("錯誤");
+                                break;
+                        }
+                });
+            };
+
+            //觸發登入
+            function pleaseLogin() {
+                document.getElementById("loginBtn").click();
+            };
+
+            noLogin = function () {
+                pleaseLogin();
+            };
+
+           //收藏
+            @foreach (var tag in Model.tags)
+            {
+            <text>
+            $(document).ready(function () {
+                $("#tagFollowBtn_@tag.tagid").on("click", function () {
+                    if ($(this).children().first().hasClass("fa-heart-o")) {
+                        likeClick("follow", "T", "up", "#tagFollowBtn_@tag.tagid");
+                    }
+                    else {
+                        likeClick("follow", "T", "down", "#tagFollowBtn_@tag.tagid");
+                    }
+                        });
+                  });
+            </text>
+            }
+
+        });
+
+        </script>
+
+    </div>
+    <script>
+        //小測驗邏輯 By River
+        $(document).ready(function () {
+            $("#exam1").hide('fast')
+            $("#btnQuestion").click(function () {
+                $(".b12").remove();
+                var check = $("input[name='answer']:checked").val();
+                if (check == "T") {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-success'> <div class='answer fw-bold'> 正確答案 </div></div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+                else {
+                    $(".form-check,#btnQuestion").hide('slow');
+                    setTimeout(function () {
+                    $("#exam1").append("<div class='alert alert-danger'><div class='answer fw-bold' >錯誤!</div> <div class='answer ' >正確答案為:<div>@foreach (var item in Model.questionList)
+                                                                                    {
+                                                                                        if (@item.IscorrectAnswer == "T")
+                                                                                        {
+                                                                                            @item.QuestionOption
+                                                                                        }
+                                                                                    }</div></div> </div>");
+                    $('#exam1').show('slow');
+                    }, 700);
+                }
+            });
+        });
+    </script>
+</body>
